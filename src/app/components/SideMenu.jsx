@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { sideMenuBtn } from "@/lib/menu";
 
 export default function SideMenu({ menuOpen, setMenuOpen }) {
-  // Animation config cho mobile
   const variants = {
     hidden: { x: "-100%", opacity: 0 },
     visible: { x: 0, opacity: 1 },
