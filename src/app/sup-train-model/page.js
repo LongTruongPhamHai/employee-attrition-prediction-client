@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export default function page() {
+export default function Page() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,7 +36,7 @@ export default function page() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[70vh] text-xl font-semibold">
-        Training models... ⏳
+        Training models...
       </div>
     );
   }
@@ -44,24 +44,45 @@ export default function page() {
   if (!data) {
     return (
       <div className="flex items-center justify-center h-[70vh] text-xl text-red-500">
-        Error loading training results ❌
+        Error loading training results
       </div>
     );
   }
 
-  // Convert metrics to chart-friendly
-  const chartData = Object.entries(data.all_results).map(([name, result]) => ({
+  const chartData = Object.entries(data.all_results).map(([name, r]) => ({
     model: name,
-    F1: result.val.F1,
-    Precision: result.val.Precision,
-    Recall: result.val.Recall,
+    F1: r.val.F1,
+    Precision: r.val.Precision,
+    Recall: r.val.Recall,
+    "ROC-AUC": r.val["ROC-AUC"],
   }));
 
   const best = data.best_model_metrics;
 
+  const renderBarChart = (metric, color) => (
+    <Card className="shadow-xl border border-black rounded-2xl">
+      <CardHeader>
+        <CardTitle className="text-xl font-semibold">
+          📈 {metric} Comparison
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="w-full h-[350px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <XAxis dataKey="model" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey={metric} fill={color} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="p-6 space-y-6">
-      {/* BEST MODEL */}
       <Card className="shadow-xl border border-black rounded-2xl">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">
@@ -84,7 +105,6 @@ export default function page() {
         </CardContent>
       </Card>
 
-      {/* ALL MODELS TABLE */}
       <Card className="shadow-xl border border-black rounded-2xl">
         <CardHeader>
           <CardTitle className="text-xl font-semibold">
@@ -104,15 +124,13 @@ export default function page() {
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(data.all_results).map(([name, r]) => (
-                  <tr key={name} className="border">
-                    <td className="border p-2 font-semibold">{name}</td>
-                    <td className="border p-2">{r.val.Precision.toFixed(4)}</td>
-                    <td className="border p-2">{r.val.Recall.toFixed(4)}</td>
-                    <td className="border p-2">{r.val.F1.toFixed(4)}</td>
-                    <td className="border p-2">
-                      {r.val["ROC-AUC"].toFixed(4)}
-                    </td>
+                {chartData.map((r) => (
+                  <tr key={r.model} className="border">
+                    <td className="border p-2 font-semibold">{r.model}</td>
+                    <td className="border p-2">{r.Precision.toFixed(4)}</td>
+                    <td className="border p-2">{r.Recall.toFixed(4)}</td>
+                    <td className="border p-2">{r.F1.toFixed(4)}</td>
+                    <td className="border p-2">{r["ROC-AUC"].toFixed(4)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -121,26 +139,10 @@ export default function page() {
         </CardContent>
       </Card>
 
-      {/* F1 SCORE CHART */}
-      <Card className="shadow-xl border border-black rounded-2xl">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold">
-            📈 F1 Score Comparison
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="w-full h-[350px]">
-            <ResponsiveContainer>
-              <BarChart data={chartData}>
-                <XAxis dataKey="model" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="F1" fill="#4ade80" /> {/* Tailwind Green */}
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+      {renderBarChart("F1", "#4ade80")}
+      {renderBarChart("Precision", "#60a5fa")}
+      {renderBarChart("Recall", "#facc15")}
+      {renderBarChart("ROC-AUC", "#f87171")}
     </div>
   );
 }
