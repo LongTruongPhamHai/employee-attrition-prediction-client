@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Database, Cpu, Users, AlertTriangle } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   BarChart,
   Bar,
@@ -10,18 +11,12 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
-  ComposedChart,
-  ErrorBar,
-  Rectangle,
-  Layer,
-  Candle,
-  Line,
-  CartesianGrid,
 } from "recharts";
+import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
-export default function page() {
+export default function Page() {
   const [data, setData] = useState(null);
 
   const fetchData = async () => {
@@ -29,15 +24,11 @@ export default function page() {
       const res = await fetch(
         "http://127.0.0.1:8000/api/overview-data/overview"
       );
-
-      if (!res.ok) {
-        throw new Error("Failed to fetch");
-      }
-
+      if (!res.ok) throw new Error("Lấy dữ liệu thất bại!");
       const json = await res.json();
       setData(json);
     } catch (error) {
-      console.log("Get data failed! Error: " + error.message);
+      console.error("Lấy dữ liệu thất bại: " + error.message);
     }
   };
 
@@ -45,14 +36,10 @@ export default function page() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
-
   if (!data)
     return (
-      <div className="flex justify-center items-center h-full text-3xl">
-        Loading...
+      <div className="flex justify-center items-center h-screen text-3xl">
+        Đang tải dữ liệu...
       </div>
     );
 
@@ -73,13 +60,11 @@ export default function page() {
   const numericCols = Object.keys(data.describe[0]).filter(
     (col) => col !== "index"
   );
-
   const boxplotTraces = numericCols.map((col) => {
     const colStats = {};
     data.describe.forEach((d) => {
       colStats[d.index] = d[col];
     });
-
     return {
       y: [
         colStats.min,
@@ -98,26 +83,31 @@ export default function page() {
   });
 
   return (
-    <div className="flex flex-col items-center gap-5">
-      <header className="text-center">
+    <div className="space-y-12 w-full mx-auto max-w-6xl py-10 px-4">
+      <motion.header
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-center space-y-3"
+      >
         <h1 className="text-4xl font-bold">
-          IBM HR Analytics Employee Attrition & Performance
+          Tổng quan Dataset IBM HR Analytics
         </h1>
         <p className="text-gray-600 text-lg">
-          Dataset mô phỏng thông tin nhân viên để phân tích Attrition &
+          Dữ liệu mô phỏng thông tin nhân viên để phân tích Attrition &
           Performance
         </p>
         <p>
           Nguồn:{" "}
           <a
             href="https://www.kaggle.com/datasets/pavansubhasht/ibm-hr-analytics-attrition-dataset"
-            target="blank"
+            target="_blank"
             className="text-blue-600 underline"
           >
             Kaggle
           </a>
         </p>
-      </header>
+      </motion.header>
 
       <section className="w-full space-y-3">
         <h2 className="text-2xl font-semibold flex items-center gap-2">
@@ -127,7 +117,7 @@ export default function page() {
           Dataset được tạo bởi các nhà khoa học dữ liệu của IBM nhằm phân tích
           và dự đoán nhân viên rời công ty (attrition) và khám phá các yếu tố
           liên quan đến hiệu suất, sự hài lòng và đặc điểm nghề nghiệp. Dữ liệu
-          là <strong>giả lập</strong> nhưng mô phỏng sát thực tế.
+          là <strong>giả lập</strong> nhưng sát với thực tế.
         </p>
       </section>
 
@@ -136,23 +126,20 @@ export default function page() {
           2. Mục đích sử dụng
         </h2>
         <ul className="list-disc pl-6 text-gray-700 space-y-1">
+          <li>Dự đoán khả năng nhân viên rời công ty (Học có giám sát)</li>
           <li>
-            Dự đoán khả năng nhân viên rời công ty (Attrition Prediction –
-            supervised learning)
+            Phân nhóm nhân viên theo đặc điểm nghề nghiệp và hành vi (Học không
+            giám sát)
           </li>
           <li>
-            Phân nhóm nhân viên theo đặc điểm nghề nghiệp và hành vi (Employee
-            Segmentation – unsupervised learning)
-          </li>
-          <li>
-            Trả lời các câu hỏi phân tích, ví dụ:
+            Phân tích câu hỏi dữ liệu ví dụ:
             <ul className="list-disc pl-5 space-y-1">
               <li>
                 So sánh khoảng cách từ nhà đến công ty theo Job Role và
                 Attrition
               </li>
               <li>
-                So sánh mức lương trung bình theo trình độ học vấn và Attrition
+                So sánh thu nhập trung bình theo trình độ học vấn và Attrition
               </li>
               <li>
                 Nhóm nhân viên theo thu nhập, tuổi, JobSatisfaction và
@@ -163,7 +150,7 @@ export default function page() {
         </ul>
       </section>
 
-      <section className="overflow-hidden w-full space-y-3">
+      <section className="w-full space-y-3">
         <h2 className="text-2xl font-semibold flex items-center gap-2">
           3. Các đặc trưng (features)
         </h2>
@@ -171,8 +158,8 @@ export default function page() {
           <table className="w-full table-auto border border-gray-200">
             <thead className="bg-gray-100">
               <tr>
-                <th className="px-4 py-2 border">Feature</th>
-                <th className="px-4 py-2 border">Kiểu</th>
+                <th className="px-4 py-2 border">Thuộc tính</th>
+                <th className="px-4 py-2 border">Kiểu dữ liệu</th>
                 <th className="px-4 py-2 border">Mô tả</th>
               </tr>
             </thead>
@@ -184,17 +171,9 @@ export default function page() {
                   "Categorical",
                   "Nhân viên rời công ty hay không (Yes/No)",
                 ],
-                [
-                  "BusinessTravel",
-                  "Categorical",
-                  "Tần suất đi công tác (Non-Travel / Travel_Rarely / Travel_Frequently)",
-                ],
+                ["BusinessTravel", "Categorical", "Tần suất đi công tác"],
                 ["DailyRate", "Numeric", "Lương theo ngày"],
-                [
-                  "Department",
-                  "Categorical",
-                  "Bộ phận làm việc (Sales, R&D, HR)",
-                ],
+                ["Department", "Categorical", "Bộ phận làm việc"],
                 [
                   "DistanceFromHome",
                   "Numeric",
@@ -269,114 +248,125 @@ export default function page() {
         </div>
       </section>
 
-      <section className="w-full space-y-3">
-        <h2 className="text-2xl font-semibold flex items-center gap-2">
-          4. Các giá trị mã hóa quan trọng
+      <section className="w-full space-y-6 pt-5">
+        <h2 className="text-3xl font-bold flex items-center gap-2">
+          <Cpu size={28} className="text-green-600" /> Tổng quan dữ liệu
         </h2>
-        <ul className="list-disc pl-6 text-gray-700 space-y-1">
-          <li>
-            Education: 1=Below College, 2=College, 3=Bachelor, 4=Master,
-            5=Doctor
-          </li>
-          <li>
-            EnvironmentSatisfaction / JobInvolvement / JobSatisfaction /
-            RelationshipSatisfaction: 1=Low → 4=Very High
-          </li>
-          <li>PerformanceRating: 1=Low, 2=Good, 3=Excellent, 4=Outstanding</li>
-          <li>WorkLifeBalance: 1=Bad, 2=Good, 3=Better, 4=Best</li>
-        </ul>
-        <p className="text-gray-600">
-          Các biến Ordinal có thể dùng trực tiếp cho ML hoặc chuyển thành dummy
-          variables nếu cần.
-        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <Card className="rounded-2xl shadow-md p-4">
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Database size={22} className="text-blue-600" />
+                  Số cột theo kiểu dữ liệu
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={dtypeData}>
+                    <XAxis dataKey="dtype" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#4f46e5" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+          >
+            <Card className="rounded-2xl shadow-md p-4">
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <AlertTriangle size={22} className="text-red-500" />
+                  Số giá trị thiếu
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={missingData}>
+                    <XAxis dataKey="column" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar
+                      dataKey="missing"
+                      fill="#dc2626"
+                      radius={[6, 6, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <Card className="rounded-2xl shadow-md sm:p-4">
+            <CardHeader>
+              <CardTitle className="text-xl">
+                Thống kê mô tả (Boxplot)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Plot
+                data={boxplotTraces}
+                layout={{
+                  yaxis: { title: "Giá trị" },
+                  xaxis: { tickangle: -45 },
+                  height: 480,
+                  margin: { t: 20, b: 100 },
+                  showlegend: false,
+                }}
+                style={{ width: "100%" }}
+              />
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <Card className="rounded-2xl shadow-md p-4">
+            <CardHeader>
+              <CardTitle className="text-xl">
+                Phân phối lớp (Attrition)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={data.target_distribution}>
+                  <XAxis dataKey="Attrition" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="Count" radius={[6, 6, 0, 0]}>
+                    {data.target_distribution.map((entry, idx) => (
+                      <Cell
+                        key={idx}
+                        fill={entry.Attrition === "Yes" ? "#dc2626" : "#16a34a"}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
       </section>
-
-      <section className="w-full space-y-3">
-        <h2 className="text-2xl font-semibold flex items-center gap-2">
-          5. Ứng dụng gợi ý
-        </h2>
-        <ul className="list-disc pl-6 text-gray-700 space-y-1">
-          <li>
-            Supervised Learning: Logistic Regression, Decision Tree, Random
-            Forest → dự đoán Attrition
-          </li>
-          <li>
-            Unsupervised Learning: K-means, Hierarchical Clustering → phân nhóm
-            nhân viên
-          </li>
-          <li>
-            Visualization: Biểu đồ phân phối Age, MonthlyIncome, YearsAtCompany
-            theo Attrition hoặc JobRole; PCA / t-SNE trực quan các cluster
-          </li>
-        </ul>
-      </section>
-
-      <section className="w-full space-y-3">
-        <h2 className="text-2xl font-semibold flex items-center gap-2">
-          6. Tổng quan dữ liệu
-        </h2>
-        <section className="bg-white p-6">
-          <h2 className="text-2xl font-bold mb-4">Số cột theo kiểu dữ liệu</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={dtypeData}>
-              <XAxis dataKey="dtype" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#4ade80" />
-            </BarChart>
-          </ResponsiveContainer>
-        </section>
-
-        <section className="bg-white p-6">
-          <h2 className="text-2xl font-bold mb-4">Số giá trị thiếu</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={missingData}>
-              <XAxis dataKey="column" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="missing" fill="#f87171" />
-            </BarChart>
-          </ResponsiveContainer>
-        </section>
-
-        <section className="bg-white p-6">
-          <h2 className="text-2xl font-bold mb-4">Thống kê mô tả (Boxplot)</h2>
-          <Plot
-            data={boxplotTraces}
-            layout={{
-              yaxis: { title: "Values" },
-              xaxis: { tickangle: -45 },
-              height: 500,
-              margin: { t: 20, b: 100 },
-              showlegend: false,
-            }}
-            style={{ width: "100%" }}
-          />
-        </section>
-
-        <section className="bg-white p-6">
-          <h2 className="text-2xl font-bold mb-4">Phân phối lớp</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data.target_distribution}>
-              <XAxis dataKey="Attrition" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="Count">
-                {data.target_distribution.map((entry, idx) => (
-                  <Cell
-                    key={idx}
-                    fill={entry.Attrition === "Yes" ? "#f87171" : "#4ade80"}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </section>
-      </section>
-      <section className="w-full space-y-3"></section>
-      <section className="w-full space-y-3"></section>
-      <section className="w-full space-y-3"></section>
-      <section className="w-full space-y-3"></section>
     </div>
   );
 }

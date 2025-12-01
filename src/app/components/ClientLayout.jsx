@@ -14,7 +14,7 @@ export default function ClientLayout({ children }) {
       {/* <Header /> */}
       <div className="flex flex-1 w-full">
         <SideMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-        <main className="p-4 w-full">{children}</main>
+        <main className="p-4 w-full sm:ms-[250px]">{children}</main>
       </div>
 
       <FloatBtn setMenuOpen={setMenuOpen} />

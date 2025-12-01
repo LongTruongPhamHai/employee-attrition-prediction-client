@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 export default function PredictPage() {
   const [form, setForm] = useState({
@@ -103,7 +104,7 @@ export default function PredictPage() {
   };
 
   const modelList = [
-    { value: "best_model", label: "Best Model" },
+    { value: "best_model", label: "Mô hình tốt nhất" },
     { value: "Dummy (most_frequent)", label: "Dummy (most_frequent)" },
     { value: "Dummy (stratified)", label: "Dummy (stratified)" },
     { value: "Logistic Regression", label: "Logistic Regression" },
@@ -137,27 +138,36 @@ export default function PredictPage() {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error(`Error ${res.status}`);
+      if (!res.ok) throw new Error(`Lỗi ${res.status}`);
       const data = await res.json();
       setResult(data);
     } catch (err) {
-      setError(err.message || "Unknown error");
+      setError(err.message || "Lỗi không xác định");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Employee Attrition Prediction</h1>
+    <div className="max-w-5xl mx-auto p-6 space-y-6">
+      <motion.h1
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-3xl font-bold text-center"
+      >
+        Dự đoán Nhân viên rời công ty
+      </motion.h1>
 
-      <form
+      <motion.form
         onSubmit={handleSubmit}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-2 gap-4"
       >
-        {/* MODEL SELECT */}
         <label className="flex flex-col md:col-span-2">
-          <span className="text-sm font-medium mb-1">Select Model</span>
+          <span className="text-sm font-medium mb-1">Chọn mô hình</span>
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
@@ -171,7 +181,6 @@ export default function PredictPage() {
           </select>
         </label>
 
-        {/* CATEGORICAL FIELDS */}
         {Object.entries(selectOptions).map(([field, options]) => (
           <label key={field} className="flex flex-col">
             <span className="text-sm font-medium mb-1">{field}</span>
@@ -190,7 +199,6 @@ export default function PredictPage() {
           </label>
         ))}
 
-        {/* NUMERIC FIELDS */}
         {Array.from(numericFields).map((field) => (
           <label key={field} className="flex flex-col">
             <span className="text-sm font-medium mb-1">{field}</span>
@@ -204,27 +212,29 @@ export default function PredictPage() {
           </label>
         ))}
 
-        {/* BUTTONS */}
         <div className="md:col-span-2 flex gap-4 items-center mt-4">
           <button
             type="submit"
-            className="bg-blue-600 text-white rounded px-4 py-2"
+            className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-700 transition"
             disabled={loading}
           >
-            {loading ? "Predicting..." : "Predict"}
+            {loading ? "Đang dự đoán..." : "Dự đoán"}
           </button>
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="border rounded px-3 py-2"
+            className="border rounded px-3 py-2 hover:bg-gray-100 transition"
           >
             Reset
           </button>
         </div>
-      </form>
+      </motion.form>
 
-      {/* RESULT */}
-      <div className="mt-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
         {error && (
           <div className="p-4 bg-red-100 border border-red-300 text-red-700 rounded">
             {error}
@@ -232,28 +242,28 @@ export default function PredictPage() {
         )}
 
         {result && result.success && (
-          <div className="p-4 bg-green-50 border border-green-300 rounded">
-            <h3 className="font-bold mb-2 text-lg">Prediction Result</h3>
-            <div className="mb-2">
-              <span className="font-medium">Model:</span> {result.data.model}
+          <div className="p-4 bg-green-50 border border-green-300 rounded space-y-2">
+            <h3 className="font-bold text-lg">Kết quả dự đoán</h3>
+            <div>
+              <span className="font-medium">Mô hình:</span> {result.data.model}
             </div>
-            <div className="mb-2">
-              <span className="font-medium">Prediction:</span>{" "}
+            <div>
+              <span className="font-medium">Kết quả:</span>{" "}
               <span
                 className={`px-2 py-1 rounded text-white ${
                   result.data.prediction === 1 ? "bg-red-600" : "bg-green-600"
                 }`}
               >
-                {result.data.prediction === 1 ? "Will Leave" : "Will Stay"}
+                {result.data.prediction === 1 ? "Sẽ rời" : "Ở lại"}
               </span>
             </div>
 
             {result.data.probability && (
               <div className="mt-2">
-                <div className="mb-1 font-medium">Probability:</div>
+                <div className="mb-1 font-medium">Xác suất:</div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <div className="text-sm">Stay (0)</div>
+                    <div className="text-sm">Ở lại (0)</div>
                     <div className="w-full bg-gray-200 rounded h-4">
                       <div
                         className="bg-green-500 h-4 rounded"
@@ -267,7 +277,7 @@ export default function PredictPage() {
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm">Leave (1)</div>
+                    <div className="text-sm">Rời (1)</div>
                     <div className="w-full bg-gray-200 rounded h-4">
                       <div
                         className="bg-red-500 h-4 rounded"
@@ -285,7 +295,7 @@ export default function PredictPage() {
             )}
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

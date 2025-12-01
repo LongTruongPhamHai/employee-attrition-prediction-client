@@ -11,10 +11,10 @@ export const sideMenuBtn = [
     label: "Huấn luyện có giám sát",
     path: "/sup-train-model",
   },
-  {
-    label: "Huấn luyện không giám sát",
-    path: "/unsup-train-model",
-  },
+  // {
+  //   label: "Huấn luyện không giám sát",
+  //   path: "/unsup-train-model",
+  // },
   {
     label: "Dự đoán",
     path: "/prediction",
